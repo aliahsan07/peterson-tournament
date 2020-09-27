@@ -1,9 +1,12 @@
-public class Process extends Thread{
+public class Process implements Runnable{
 
+    // shared static variables
+    volatile static boolean[] flag = new boolean[2];
+    volatile static int turn = -1;
+    // shared counter
+    static int counter = 0;
     private int ID;
-    private static boolean[] flag = new boolean[2];
-    private static int turn = -1;
-    private static int counter = 0;
+    final int NUMBER_OF_ITERATIONS = 10000000;
 
     public Process(int id){
         this.ID = id;
@@ -12,30 +15,42 @@ public class Process extends Thread{
     @Override
     public void run(){
 
-        System.out.println("Process #" + this.ID + " started running...");
+//        System.out.println("Process #" + this.ID + " started running...");
+        try {
+            doWork();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void doWork() throws InterruptedException {
+
+        for (int i=0; i < NUMBER_OF_ITERATIONS; i++) {
+//            System.out.println("Process #" + this.ID + " begins lock section " + flag[1 - this.ID] + " : " + turn);
+            lock();
+//            System.out.println("Process #" + this.ID + " med lock section " + flag[1 - this.ID] + " : " + turn);
+            // execute critical section
+            counter += 1;
+//            System.out.println("Process #" + this.ID + " is currently executing critical section.");
+//            System.out.println("counter value:" + counter);
+
+            // release the lock
+            unlock();
+        }
 
     }
 
     public void lock() throws InterruptedException {
 
-
-        System.out.println("Process #" + this.ID + " begins lock section " + flag[1 - this.ID] + " : " + turn);
         flag[this.ID] = true;
         turn = 1 - this.ID;
-        System.out.println("Process #" + this.ID + " med lock section " + flag[1 - this.ID] + " : " + turn);
-        while (flag[1-ID] && turn != ID){ };
+//        System.out.println(" lock status myID:"+  this.ID + " " + flag[this.ID] + ":" + flag[1 - this.ID] + " : " + turn);
+        while (flag[1-ID] && turn != ID);
 
-        // execute critical section
-        counter += 1;
-        System.out.println("Process #" + this.ID + " is currently executing critical section.");
-        System.out.println("counter value:" + counter);
-//        Thread.currentThread().sleep(5000);
-
-        // release the lock
-        this.unlock(flag);
     }
 
-    public void unlock(boolean[] flag){
+    public void unlock(){
         flag[this.ID] = false;
     }
 
