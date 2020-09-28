@@ -1,28 +1,26 @@
 public class Main {
 
-    private static int noOfProcesses;
+    private static int NUMBER_OF_PROCESSES = 5;
 
     public static void main(String[] args) throws InterruptedException {
 
-//        noOfProcesses = 2;
-//        // initalize shared variables
-//
-//
-//        // boot the algorithm
-        Process process0 = new Process(0);
-        Process process1 = new Process(1);
+        // initialize shared variables
 
-//        for (int i = 0; i < flag.length; i++){
-//            Process process = new
-//        }
+        Thread threads[] = new Thread[NUMBER_OF_PROCESSES];
+        // boot the algorithm
 
-        Thread t1 = new Thread(process0);
-        Thread t2 = new Thread(process1);
-        t1.start();
-        t2.start();
+        for (int i=0; i < NUMBER_OF_PROCESSES; i++){
+            Process p = new Process(i, NUMBER_OF_PROCESSES);
+            Thread t = new Thread(p);
+            threads[i] = t;
+            t.start();
+        }
 
-        t1.join();
-        t2.join();
+        for (int i=0; i < NUMBER_OF_PROCESSES; i++){
+            threads[i].join();
+        }
+
+        System.out.println("count = " + Process.counter);
 
 
     }

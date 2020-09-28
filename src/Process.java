@@ -1,15 +1,34 @@
+import java.util.Arrays;
+
 public class Process implements Runnable{
 
     // shared static variables
-    volatile static boolean[] flag = new boolean[2];
-    volatile static int turn = -1;
+    volatile static boolean[][] flag;
+    volatile static int[][] turn;
     // shared counter
     static int counter = 0;
     private int ID;
-    final int NUMBER_OF_ITERATIONS = 10000000;
+    private int node;
+    private String binaryID;
+    final int NUMBER_OF_ITERATIONS = 1000;
+    private int levels = -1;
 
-    public Process(int id){
+    public Process(int id, int n){
         this.ID = id;
+        this.binaryID = Integer.toBinaryString(id);
+
+        levels = (int) Math.ceil(Math.log(n) / Math.log(2));
+        flag = new boolean[levels][n];
+        int cols = (n + 1) / 2;
+        turn = new int[levels][cols];
+    }
+
+    public void setID(int id){
+        this.ID = id;
+    }
+
+    public int getID(){
+        return this.ID;
     }
 
     @Override
@@ -31,6 +50,7 @@ public class Process implements Runnable{
             lock();
 //            System.out.println("Process #" + this.ID + " med lock section " + flag[1 - this.ID] + " : " + turn);
             // execute critical section
+            System.out.println("Process " + ID + " is executing critical section.");
             counter += 1;
 //            System.out.println("Process #" + this.ID + " is currently executing critical section.");
 //            System.out.println("counter value:" + counter);
@@ -39,19 +59,45 @@ public class Process implements Runnable{
             unlock();
         }
 
+
     }
 
     public void lock() throws InterruptedException {
 
-        flag[this.ID] = true;
-        turn = 1 - this.ID;
+        node = ID;
+        for (int i=0; i < levels; i++) {
+            int idThisLevel = 0;
+            if (i <  binaryID.length()){
+                idThisLevel = binaryID.charAt(binaryID.length()-1-i) - '0';
+            }
+
+
+//            System.out.println("Process " + ID + " gets the id " + idThisLevel + " in level " + i);
+            node = node/2;
+//            System.out.println("Process " + ID + " gets the id " + idThisLevel + " in level " + i + " node " + node);
+            flag[i][2 * node + idThisLevel] = true;
+            System.out.println("Printing flag for process " + ID + " in level " + i + " node " + node + " " + Arrays.deepToString(flag));
+//            flag[this.ID] = true;
+            turn[i][node] = 1 - idThisLevel;
+            System.out.println("Printing turn for process " + ID + " in level " + i + " node " + node + " " + Arrays.deepToString(turn));
+
+//            turn = 1 - this.ID;
 //        System.out.println(" lock status myID:"+  this.ID + " " + flag[this.ID] + ":" + flag[1 - this.ID] + " : " + turn);
-        while (flag[1-ID] && turn != ID);
+//            System.out.println("Printing flag for process " + (ID + 1 - idThisLevel) + " in level " + i + " node " + node + " " + flag[i][1-idThisLevel]);
+            while (flag[i][1-idThisLevel] == true && turn[i][node] != idThisLevel) ;
+        }
 
     }
 
     public void unlock(){
-        flag[this.ID] = false;
+        for (int i=levels-1; i >= 0; i--){
+            int idThisLevel = 0;
+            if (i <  binaryID.length()){
+                idThisLevel = binaryID.charAt(binaryID.length()-1-i) - '0';
+            }
+            flag[i][2 * node + idThisLevel] = false;
+            node = node * 2;
+        }
     }
 
 }
