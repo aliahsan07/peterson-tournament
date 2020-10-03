@@ -24,5 +24,7 @@ For example
 The output is the count of shared counter at the end of algorithm execution. For this example the output is 4000. Also for analysis purposes the program outputs the throughput execution time and appends it to results.csv file.
 
 You could also directly compile the Java files and run i.e (instead of executing bash script):
+
 `javac Main.java`
+
 `java Main 1000 4`
