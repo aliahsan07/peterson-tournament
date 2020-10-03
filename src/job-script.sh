@@ -12,4 +12,4 @@
 
 # run the executable named a.out
 javac Main.java
-java Main
+java Main 300 9
